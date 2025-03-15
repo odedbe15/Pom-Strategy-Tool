@@ -1,0 +1,1569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FRC Scouting Dashboard</title>
+    <style>
+        :root {
+            --primary-color: #69369c;
+            --primary-dark: #522a77;
+            --primary-light: #8145bd;
+            --text-color: #333;
+            --background-color: #f5f5f5;
+            --card-background: #fff;
+            --border-color: #ddd;
+        }
+
+        .dark-mode {
+            --primary-color: #69369c;
+            --primary-dark: #522a77;
+            --primary-light: #8145bd;
+            --text-color: #f5f5f5;
+            --background-color: #222;
+            --card-background: #333;
+            --border-color: #444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            transition: background-color 0.3s ease;
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-container img {
+            height: 40px;
+            margin-right: 15px;
+        }
+
+        nav {
+            background-color: var(--primary-dark);
+            padding: 10px 20px;
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            margin-right: 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background-color: var(--primary-light);
+        }
+
+        .container {
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: var(--card-background);
+            margin: 10% auto;
+            padding: 20px;
+            width: 60%;
+            border-radius: 5px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            position: relative;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        textarea {
+            width: 100%;
+            height: 200px;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--card-background);
+            color: var(--text-color);
+        }
+
+        .main-page {
+            display: block;
+        }
+
+        .alliance-page, .field-page {
+            display: none;
+        }
+
+        .match-selector {
+            margin-bottom: 20px;
+        }
+
+        .match-selector label {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .match-selector input {
+            padding: 5px;
+            width: 60px;
+            text-align: center;
+        }
+
+        .team-boxes {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .team-box {
+            padding: 15px;
+            background-color: var(--card-background);
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: transform 0.2s;
+            border: 2px solid var(--border-color);
+            min-height: 100px;
+        }
+
+        .team-box:hover {
+            transform: translateY(-5px);
+        }
+
+        .red-team {
+            border-left: 5px solid #ff4d4d;
+        }
+
+        .blue-team {
+            border-left: 5px solid #4d79ff;
+        }
+
+        .team-number {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .team-name {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .alliance-container {
+            overflow: hidden;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .alliance-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            table-layout: fixed;
+        }
+
+        .alliance-table th, .alliance-table td {
+            border: 2px solid #fff;
+            padding: 12px;
+            text-align: center;
+            background-color: var(--primary-color);
+            color: white;
+            height: 80px;
+        }
+
+        .alliance-table th {
+            font-weight: bold;
+        }
+
+        .alliance-table tr:first-child th {
+            background-color: var(--primary-dark);
+        }
+
+        .team-cube {
+            display: inline-block;
+            width: 60px;
+            height: 60px;
+            background-color: var(--primary-light);
+            color: white;
+            text-align: center;
+            line-height: 60px;
+            font-weight: bold;
+            font-size: 16px;
+            margin: 5px;
+            cursor: move;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .teams-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: var(--card-background);
+            border-radius: 5px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .pick-lists {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .pick-list {
+            flex: 1;
+            margin: 0 10px;
+            padding: 15px;
+            background-color: var(--card-background);
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .pick-list-title {
+            text-align: center;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .pick-list-content {
+            min-height: 100px;
+            border: 1px dashed var(--border-color);
+            padding: 10px;
+            border-radius: 5px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .field-container {
+            position: relative;
+            margin-top: 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        #field-image {
+            width: 100%;
+            display: block;
+        }
+
+        #drawing-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 2;
+        }
+
+        .field-tools {
+            display: flex;
+            margin-top: 10px;
+            gap: 10px;
+        }
+
+        .field-team-cube {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            cursor: move;
+            z-index: 3;
+        }
+
+        .red-cube {
+            background-color: #ff4d4d;
+        }
+
+        .blue-cube {
+            background-color: #4d79ff;
+        }
+
+        .team-details {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background-color: var(--card-background);
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+            display: none;
+        }
+
+        .notes-container {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: var(--card-background);
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .notes-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .note-input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--card-background);
+            color: var(--text-color);
+        }
+
+        .note-item {
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: var(--background-color);
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .delete-note {
+            color: #ff4d4d;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        #toggle-dark-mode {
+            background-color: #333;
+            color: white;
+        }
+
+        .dark-mode #toggle-dark-mode {
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .dropzone {
+            position: relative;
+        }
+
+        .dropzone-highlight {
+            background-color: rgba(105, 54, 156, 0.2);
+        }
+
+        #team-details-tooltip {
+            position: fixed;
+            display: none;
+            background-color: var(--card-background);
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            width: 300px;
+        }
+
+        .trash-zone {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 10px;
+            padding: 10px;
+            border: 2px dashed #ff4d4d;
+            border-radius: 5px;
+            color: #ff4d4d;
+            font-weight: bold;
+        }
+
+        .input-container {
+            margin-bottom: 10px;
+        }
+
+        .input-container input, .input-container select {
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--card-background);
+            color: var(--text-color);
+        }
+
+        .alliance-page-container {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 120px);
+        }
+
+        .alliance-scrollable {
+            overflow-y: auto;
+            padding-bottom: 20px;
+        }
+
+        @media screen and (max-width: 768px) {
+            .team-boxes {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .modal-content {
+                width: 90%;
+            }
+            
+            .pick-lists {
+                flex-direction: column;
+            }
+            
+            .pick-list {
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <img src="static/FRC.png" alt="FRC Logo">
+            <img src="static/POM.png" alt="POM Logo">
+            <h1>FRC Scouting Dashboard</h1>
+        </div>
+        <button id="toggle-dark-mode">Toggle Dark Mode</button>
+    </header>
+
+    <nav>
+        <button id="load-teams-btn">Load Teams</button>
+        <button id="notes-btn">Notes</button>
+        <button id="alliance-btn">Alliance</button>
+        <button id="show-field-btn">Show Field</button>
+        <button id="load-matches-btn">Load Matches</button>
+        <button id="main-page-btn">Main Page</button>
+        <button id="back">Main App</button>
+    </nav>
+
+    <div class="container">
+        <!-- Main Page -->
+        <div class="main-page">
+            <div class="match-selector">
+                <label for="match-number">Match Number:</label>
+                <input type="number" id="match-number" min="1" value="1">
+                <button id="update-match-btn">Update</button>
+            </div>
+
+            <div class="team-boxes" id="match-teams">
+                <!-- Teams will be populated here -->
+            </div>
+
+            <div class="notes-container" id="team-notes-container" style="display: none;">
+                <div class="notes-header">
+                    <h3 id="team-notes-title">Notes for Team</h3>
+                </div>
+                <div class="input-container">
+                    <input type="text" id="new-note-input" class="note-input" placeholder="Add a note...">
+                    <button id="add-note-btn">Add Note</button>
+                </div>
+                <div id="notes-list">
+                    <!-- Notes will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Alliance Page -->
+        <div class="alliance-page">
+            <div class="alliance-page-container">
+                <div class="alliance-scrollable">
+                    <div class="alliance-container">
+                        <table class="alliance-table">
+                            <tr>
+                                <th></th>
+                                <th>Captain</th>
+                                <th>1 Pick</th>
+                                <th>2 Pick</th>
+                            </tr>
+                            <tr>
+                                <th>Alliance 1</th>
+                                <td class="dropzone" data-alliance="1" data-position="captain"></td>
+                                <td class="dropzone" data-alliance="1" data-position="first"></td>
+                                <td class="dropzone" data-alliance="1" data-position="second"></td>
+                            </tr>
+                            <tr>
+                                <th>Alliance 2</th>
+                                <td class="dropzone" data-alliance="2" data-position="captain"></td>
+                                <td class="dropzone" data-alliance="2" data-position="first"></td>
+                                <td class="dropzone" data-alliance="2" data-position="second"></td>
+                            </tr>
+                            <tr>
+                                <th>Alliance 3</th>
+                                <td class="dropzone" data-alliance="3" data-position="captain"></td>
+                                <td class="dropzone" data-alliance="3" data-position="first"></td>
+                                <td class="dropzone" data-alliance="3" data-position="second"></td>
+                            </tr>
+                            <tr>
+                                <th>Alliance 4</th>
+                                <td class="dropzone" data-alliance="4" data-position="captain"></td>
+                                <td class="dropzone" data-alliance="4" data-position="first"></td>
+                                <td class="dropzone" data-alliance="4" data-position="second"></td>
+                            </tr>
+                            <tr>
+                                <th>Alliance 5</th>
+                                <td class="dropzone" data-alliance="5" data-position="captain"></td>
+                                <td class="dropzone" data-alliance="5" data-position="first"></td>
+                                <td class="dropzone" data-alliance="5" data-position="second"></td>
+                            </tr>
+                            <tr>
+                                <th>Alliance 6</th>
+                                <td class="dropzone" data-alliance="6" data-position="captain"></td>
+                                <td class="dropzone" data-alliance="6" data-position="first"></td>
+                                <td class="dropzone" data-alliance="6" data-position="second"></td>
+                            </tr>
+                            <tr>
+                                <th>Alliance 7</th>
+                                <td class="dropzone" data-alliance="7" data-position="captain"></td>
+                                <td class="dropzone" data-alliance="7" data-position="first"></td>
+                                <td class="dropzone" data-alliance="7" data-position="second"></td>
+                            </tr>
+                            <tr>
+                                <th>Alliance 8</th>
+                                <td class="dropzone" data-alliance="8" data-position="captain"></td>
+                                <td class="dropzone" data-alliance="8" data-position="first"></td>
+                                <td class="dropzone" data-alliance="8" data-position="second"></td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="pick-lists">
+                        <div class="pick-list">
+                            <div class="pick-list-title">My First Pick</div>
+                            <div class="pick-list-content dropzone" id="my-first-pick"></div>
+                        </div>
+                        <div class="pick-list">
+                            <div class="pick-list-title">My Second Pick</div>
+                            <div class="pick-list-content dropzone" id="my-second-pick"></div>
+                        </div>
+                        <div class="pick-list">
+                            <div class="pick-list-title">Teams Above Us</div>
+                            <div class="pick-list-content dropzone" id="teams-above"></div>
+                        </div>
+                    </div>
+
+                    <h3>Available Teams</h3>
+                    <div class="teams-container" id="alliance-teams-container">
+                        <!-- Teams will be populated here -->
+                    </div>
+
+                    <div class="trash-zone" id="alliance-trash">
+                        🗑️ Drop here to remove
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Field Page -->
+        <div class="field-page">
+            <div class="field-container">
+                <img src="static/topview.gif" alt="Field View" id="field-image">
+                <canvas id="drawing-canvas"></canvas>
+                <!-- Field team cubes will be added here dynamically -->
+            </div>
+            <div class="field-tools">
+                <button id="draw-btn">Draw</button>
+                <button id="erase-btn">Erase</button>
+                <button id="reset-drawing-btn">Reset Drawing</button>
+                <button id="reset-position-btn">Reset Positions</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Team Details Tooltip -->
+    <div id="team-details-tooltip"></div>
+
+    <!-- Load Teams Modal -->
+    <div id="load-teams-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" id="close-teams-modal">&times;</span>
+            <h2>Load Teams</h2>
+            <p>Paste your team list in the format: team number, team name, location (each on a new line)</p>
+            <textarea id="teams-input"></textarea>
+            <button id="save-teams-btn">Save Teams</button>
+        </div>
+    </div>
+
+    <!-- Notes Modal -->
+    <div id="notes-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" id="close-notes-modal">&times;</span>
+            <h2>Team Notes</h2>
+            <div class="input-container">
+                <select id="team-select">
+                    <option value="">Select a team</option>
+                </select>
+            </div>
+            <div class="input-container">
+                <input type="text" id="note-input" placeholder="Add a note...">
+                <button id="save-note-btn">Add Note</button>
+            </div>
+            <div id="modal-notes-list">
+                <!-- Notes will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Load Matches Modal -->
+    <div id="load-matches-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" id="close-matches-modal">&times;</span>
+            <h2>Load Matches</h2>
+            <p>Paste your matches list (Format: "Quals #" followed by 6 team numbers, first 3 red, last 3 blue)</p>
+            <textarea id="matches-input"></textarea>
+            <button id="save-matches-btn">Save Matches</button>
+        </div>
+    </div>
+
+    <script>
+        // Data Storage
+        let teams = [];
+        let notes = {};
+        let matches = {};
+        let currentMatch = 1;
+        let selectedTeam = null;
+        let isDarkMode = false;
+        let isDrawing = false;
+        let drawingContext = null;
+        let fieldTeams = {
+            red: [],
+            blue: []
+        };
+        let allianceData = {
+            1: { captain: null, first: null, second: null },
+            2: { captain: null, first: null, second: null },
+            3: { captain: null, first: null, second: null },
+            4: { captain: null, first: null, second: null },
+            5: { captain: null, first: null, second: null },
+            6: { captain: null, first: null, second: null },
+            7: { captain: null, first: null, second: null },
+            8: { captain: null, first: null, second: null }
+        };
+        let myFirstPick = [];
+        let mySecondPick = [];
+        let teamsAboveUs = [];
+
+        // DOM Elements
+        const loadTeamsBtn = document.getElementById('load-teams-btn');
+        const notesBtn = document.getElementById('notes-btn');
+        const allianceBtn = document.getElementById('alliance-btn');
+        const showFieldBtn = document.getElementById('show-field-btn');
+        const loadMatchesBtn = document.getElementById('load-matches-btn');
+        const mainPageBtn = document.getElementById('main-page-btn');
+        const backBtn = document.getElementById('back');
+        const toggleDarkModeBtn = document.getElementById('toggle-dark-mode');
+
+        const loadTeamsModal = document.getElementById('load-teams-modal');
+        const notesModal = document.getElementById('notes-modal');
+        const loadMatchesModal = document.getElementById('load-matches-modal');
+
+        const closeTeamsModal = document.getElementById('close-teams-modal');
+        const closeNotesModal = document.getElementById('close-notes-modal');
+        const closeMatchesModal = document.getElementById('close-matches-modal');
+
+        const teamsInput = document.getElementById('teams-input');
+        const matchesInput = document.getElementById('matches-input');
+        const saveTeamsBtn = document.getElementById('save-teams-btn');
+        const saveMatchesBtn = document.getElementById('save-matches-btn');
+
+        const teamSelect = document.getElementById('team-select');
+        const noteInput = document.getElementById('note-input');
+        const saveNoteBtn = document.getElementById('save-note-btn');
+        const modalNotesList = document.getElementById('modal-notes-list');
+
+        const matchNumber = document.getElementById('match-number');
+        const updateMatchBtn = document.getElementById('update-match-btn');
+        const matchTeams = document.getElementById('match-teams');
+
+        const mainPage = document.querySelector('.main-page');
+        const alliancePage = document.querySelector('.alliance-page');
+        const fieldPage = document.querySelector('.field-page');
+
+        const allianceTeamsContainer = document.getElementById('alliance-teams-container');
+        const myFirstPickContainer = document.getElementById('my-first-pick');
+        const mySecondPickContainer = document.getElementById('my-second-pick');
+        const teamsAboveContainer = document.getElementById('teams-above');
+
+        const fieldImage = document.getElementById('field-image');
+        const drawingCanvas = document.getElementById('drawing-canvas');
+        const drawBtn = document.getElementById('draw-btn');
+        const eraseBtn = document.getElementById('erase-btn');
+        const resetDrawingBtn = document.getElementById('reset-drawing-btn');
+        const resetPositionBtn = document.getElementById('reset-position-btn');
+
+        const teamNotesContainer = document.getElementById('team-notes-container');
+        const teamNotesTitle = document.getElementById('team-notes-title');
+        const newNoteInput = document.getElementById('new-note-input');
+        const addNoteBtn = document.getElementById('add-note-btn');
+        const notesList = document.getElementById('notes-list');
+
+        const teamDetailsTooltip = document.getElementById('team-details-tooltip');
+        
+        // Initialize from local storage
+        function initFromLocalStorage() {
+            if (localStorage.getItem('frcTeams')) {
+                teams = JSON.parse(localStorage.getItem('frcTeams'));
+            }
+            
+            if (localStorage.getItem('frcNotes')) {
+                notes = JSON.parse(localStorage.getItem('frcNotes'));
+            }
+            
+            if (localStorage.getItem('frcMatches')) {
+                matches = JSON.parse(localStorage.getItem('frcMatches'));
+            }
+            
+            if (localStorage.getItem('frcCurrentMatch')) {
+                currentMatch = parseInt(localStorage.getItem('frcCurrentMatch'));
+                matchNumber.value = currentMatch;
+            }
+            
+            if (localStorage.getItem('frcAllianceData')) {
+                allianceData = JSON.parse(localStorage.getItem('frcAllianceData'));
+            }
+            
+            if (localStorage.getItem('frcMyFirstPick')) {
+                myFirstPick = JSON.parse(localStorage.getItem('frcMyFirstPick'));
+            }
+            
+            if (localStorage.getItem('frcMySecondPick')) {
+                mySecondPick = JSON.parse(localStorage.getItem('frcMySecondPick'));
+            }
+            
+            if (localStorage.getItem('frcTeamsAboveUs')) {
+                teamsAboveUs = JSON.parse(localStorage.getItem('frcTeamsAboveUs'));
+            }
+            
+            if (localStorage.getItem('frcFieldTeams')) {
+                fieldTeams = JSON.parse(localStorage.getItem('frcFieldTeams'));
+            }
+            
+            if (localStorage.getItem('frcDarkMode') === 'true') {
+                toggleDarkMode();
+            }
+        }
+
+        // Save to local storage
+        function saveTeams() {
+            localStorage.setItem('frcTeams', JSON.stringify(teams));
+        }
+
+        function saveNotes() {
+            localStorage.setItem('frcNotes', JSON.stringify(notes));
+        }
+
+        function saveMatches() {
+            localStorage.setItem('frcMatches', JSON.stringify(matches));
+            localStorage.setItem('frcCurrentMatch', currentMatch.toString());
+        }
+
+        function saveAllianceData() {
+            localStorage.setItem('frcAllianceData', JSON.stringify(allianceData));
+            localStorage.setItem('frcMyFirstPick', JSON.stringify(myFirstPick));
+            localStorage.setItem('frcMySecondPick', JSON.stringify(mySecondPick));
+            localStorage.setItem('frcTeamsAboveUs', JSON.stringify(teamsAboveUs));
+        }
+
+        function saveFieldTeams() {
+            localStorage.setItem('frcFieldTeams', JSON.stringify(fieldTeams));
+        }
+
+        // Toggle dark mode
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            isDarkMode = document.body.classList.contains('dark-mode');
+            localStorage.setItem('frcDarkMode', isDarkMode.toString());
+        }
+
+        // Parse teams input
+        function parseTeams(input) {
+            const lines = input.trim().split('\n');
+            const parsedTeams = [];
+            
+            for (let i = 0; i < lines.length; i += 3) {
+                if (i + 2 < lines.length) {
+                    const teamNumber = lines[i].trim();
+                    const teamName = lines[i + 1].trim();
+                    const location = lines[i + 2].trim();
+                    
+                    parsedTeams.push({
+                        number: teamNumber,
+                        name: teamName,
+                        location: location
+                    });
+                }
+            }
+            
+            return parsedTeams;
+        }
+
+        // Parse matches input
+        function parseMatches(input) {
+            const lines = input.trim().split('\n');
+            const parsedMatches = {};
+            
+            for (let i = 0; i < lines.length; i += 2) {
+                if (i + 1 < lines.length) {
+                    const matchInfo = lines[i].trim();
+                    const teamNumbers = lines[i + 1].trim().split(/\s+/);
+                    
+                    if (matchInfo.startsWith('Quals') && teamNumbers.length === 6) {
+                        const matchNumber = matchInfo.split(' ')[1];
+                        
+                        parsedMatches[matchNumber] = {
+                            red: teamNumbers.slice(0, 3),
+                            blue: teamNumbers.slice(3, 6)
+                        };
+                    }
+                }
+            }
+            
+            return parsedMatches;
+        }
+
+        // Update notes list in the main page
+    function updateNotesList(teamNumber) {
+        notesList.innerHTML = '';
+        
+        if (notes[teamNumber]) {
+            notes[teamNumber].forEach((note, index) => {
+                const noteItem = document.createElement('div');
+                noteItem.className = 'note-item';
+                noteItem.innerHTML = `
+                    <div>${note}</div>
+                    <span class="delete-note" data-team="${teamNumber}" data-index="${index}">✖</span>
+                `;
+                notesList.appendChild(noteItem);
+            });
+        }
+    }
+
+    // Update match teams display
+    function updateMatchTeamsDisplay() {
+        matchTeams.innerHTML = '';
+        
+        if (matches[currentMatch]) {
+            const redTeams = matches[currentMatch].red;
+            const blueTeams = matches[currentMatch].blue;
+            
+            redTeams.forEach(teamNumber => {
+                const team = teams.find(t => t.number === teamNumber);
+                if (team) {
+                    const teamBox = createTeamBox(team, 'red-team');
+                    matchTeams.appendChild(teamBox);
+                }
+            });
+            
+            blueTeams.forEach(teamNumber => {
+                const team = teams.find(t => t.number === teamNumber);
+                if (team) {
+                    const teamBox = createTeamBox(team, 'blue-team');
+                    matchTeams.appendChild(teamBox);
+                }
+            });
+        } else {
+            matchTeams.innerHTML = '<p>No match data available for this match number.</p>';
+        }
+    }
+
+    // Create team box element
+    function createTeamBox(team, teamClass) {
+        const teamBox = document.createElement('div');
+        teamBox.className = `team-box ${teamClass}`;
+        teamBox.setAttribute('data-team', team.number);
+        
+        teamBox.innerHTML = `
+            <div class="team-number">${team.number}</div>
+            <div class="team-name">${team.name}</div>
+            <div class="team-location">${team.location}</div>
+        `;
+        
+        teamBox.addEventListener('click', function() {
+            selectedTeam = team.number;
+            teamNotesTitle.textContent = `Notes for Team ${team.number} - ${team.name}`;
+            updateNotesList(team.number);
+            teamNotesContainer.style.display = 'block';
+        });
+        
+        return teamBox;
+    }
+
+    // Create team cube element for alliance page
+    function createTeamCube(team) {
+        const teamCube = document.createElement('div');
+        teamCube.className = 'team-cube';
+        teamCube.setAttribute('data-team', team.number);
+        teamCube.textContent = team.number;
+        teamCube.draggable = true;
+        
+        teamCube.addEventListener('dragstart', function(e) {
+            e.dataTransfer.setData('text/plain', team.number);
+        });
+        
+        teamCube.addEventListener('mouseover', function(e) {
+            showTeamDetails(team, e.clientX, e.clientY);
+        });
+        
+        teamCube.addEventListener('mouseout', function() {
+            hideTeamDetails();
+        });
+        
+        return teamCube;
+    }
+
+    // Show team details tooltip
+    function showTeamDetails(team, x, y) {
+        teamDetailsTooltip.innerHTML = `
+            <strong>Team ${team.number}</strong><br>
+            ${team.name}<br>
+            ${team.location}
+        `;
+        
+        teamDetailsTooltip.style.left = `${x + 10}px`;
+        teamDetailsTooltip.style.top = `${y + 10}px`;
+        teamDetailsTooltip.style.display = 'block';
+    }
+
+    // Hide team details tooltip
+    function hideTeamDetails() {
+        teamDetailsTooltip.style.display = 'none';
+    }
+
+    // Update alliance teams display
+    function updateAllianceTeamsDisplay() {
+        allianceTeamsContainer.innerHTML = '';
+        
+        // Create a list of teams that are already in an alliance
+        const usedTeams = new Set();
+        
+        for (const allianceNumber in allianceData) {
+            const alliance = allianceData[allianceNumber];
+            
+            if (alliance.captain) usedTeams.add(alliance.captain);
+            if (alliance.first) usedTeams.add(alliance.first);
+            if (alliance.second) usedTeams.add(alliance.second);
+        }
+        
+        // Add available teams (not in any alliance)
+        teams.forEach(team => {
+            if (!usedTeams.has(team.number)) {
+                const teamCube = createTeamCube(team);
+                allianceTeamsContainer.appendChild(teamCube);
+            }
+        });
+    }
+
+    // Restore alliance positions
+    function restoreAlliancePositions() {
+        // Clear all dropzones first
+        document.querySelectorAll('.dropzone').forEach(dropzone => {
+            dropzone.innerHTML = '';
+        });
+        
+        // Restore alliance positions
+        for (const allianceNumber in allianceData) {
+            const alliance = allianceData[allianceNumber];
+            
+            if (alliance.captain) {
+                const team = teams.find(t => t.number === alliance.captain);
+                if (team) {
+                    const captainDropzone = document.querySelector(`.dropzone[data-alliance="${allianceNumber}"][data-position="captain"]`);
+                    captainDropzone.appendChild(createTeamCube(team));
+                }
+            }
+            
+            if (alliance.first) {
+                const team = teams.find(t => t.number === alliance.first);
+                if (team) {
+                    const firstDropzone = document.querySelector(`.dropzone[data-alliance="${allianceNumber}"][data-position="first"]`);
+                    firstDropzone.appendChild(createTeamCube(team));
+                }
+            }
+            
+            if (alliance.second) {
+                const team = teams.find(t => t.number === alliance.second);
+                if (team) {
+                    const secondDropzone = document.querySelector(`.dropzone[data-alliance="${allianceNumber}"][data-position="second"]`);
+                    secondDropzone.appendChild(createTeamCube(team));
+                }
+            }
+        }
+        
+        // Restore pick lists
+        myFirstPickContainer.innerHTML = '';
+        mySecondPickContainer.innerHTML = '';
+        teamsAboveContainer.innerHTML = '';
+        
+        myFirstPick.forEach(teamNumber => {
+            const team = teams.find(t => t.number === teamNumber);
+            if (team) {
+                myFirstPickContainer.appendChild(createTeamCube(team));
+            }
+        });
+        
+        mySecondPick.forEach(teamNumber => {
+            const team = teams.find(t => t.number === teamNumber);
+            if (team) {
+                mySecondPickContainer.appendChild(createTeamCube(team));
+            }
+        });
+        
+        teamsAboveUs.forEach(teamNumber => {
+            const team = teams.find(t => t.number === teamNumber);
+            if (team) {
+                teamsAboveContainer.appendChild(createTeamCube(team));
+            }
+        });
+    }
+
+    // Initialize canvas for drawing
+    function initCanvas() {
+        const canvas = drawingCanvas;
+        canvas.width = fieldImage.clientWidth;
+        canvas.height = fieldImage.clientHeight;
+        
+        drawingContext = canvas.getContext('2d');
+        drawingContext.lineWidth = 3;
+        drawingContext.lineCap = 'round';
+        drawingContext.strokeStyle = '#69369C';
+    }
+
+    // Create field team cubes
+    function createFieldTeamCubes() {
+        const fieldContainer = document.querySelector('.field-container');
+        
+        // Clear existing cubes
+        document.querySelectorAll('.field-team-cube').forEach(cube => cube.remove());
+        
+        if (matches[currentMatch]) {
+            const redTeams = matches[currentMatch].red;
+            const blueTeams = matches[currentMatch].blue;
+            
+            // Add red team cubes
+            redTeams.forEach((teamNumber, index) => {
+                const savedPosition = fieldTeams.red.find(t => t.number === teamNumber);
+                const top = savedPosition ? savedPosition.top : 150 + index * 60;
+                const left = savedPosition ? savedPosition.left : fieldImage.clientWidth - 70;
+                
+                const teamCube = document.createElement('div');
+                teamCube.className = 'field-team-cube red-cube';
+                teamCube.setAttribute('data-team', teamNumber);
+                teamCube.textContent = teamNumber;
+                teamCube.style.top = `${top}px`;
+                teamCube.style.left = `${left}px`;
+                
+                // Make draggable
+                makeDraggable(teamCube);
+                
+                fieldContainer.appendChild(teamCube);
+            });
+            
+            // Add blue team cubes
+            blueTeams.forEach((teamNumber, index) => {
+                const savedPosition = fieldTeams.blue.find(t => t.number === teamNumber);
+                const top = savedPosition ? savedPosition.top : 150 + index * 60;
+                const left = savedPosition ? savedPosition.left : 20;
+                
+                const teamCube = document.createElement('div');
+                teamCube.className = 'field-team-cube blue-cube';
+                teamCube.setAttribute('data-team', teamNumber);
+                teamCube.textContent = teamNumber;
+                teamCube.style.top = `${top}px`;
+                teamCube.style.left = `${left}px`;
+                
+                // Make draggable
+                makeDraggable(teamCube);
+                
+                fieldContainer.appendChild(teamCube);
+            });
+        }
+    }
+
+    // Make an element draggable
+    function makeDraggable(element) {
+        let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+        
+        element.onmousedown = dragMouseDown;
+        
+        function dragMouseDown(e) {
+            e.preventDefault();
+            // Get the mouse cursor position at startup
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+            document.onmouseup = closeDragElement;
+            // Call a function whenever the cursor moves
+            document.onmousemove = elementDrag;
+        }
+        
+        function elementDrag(e) {
+            e.preventDefault();
+            // Calculate the new cursor position
+            pos1 = pos3 - e.clientX;
+            pos2 = pos4 - e.clientY;
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+            // Set the element's new position
+            element.style.top = (element.offsetTop - pos2) + "px";
+            element.style.left = (element.offsetLeft - pos1) + "px";
+            
+            // Save position
+            const teamNumber = element.getAttribute('data-team');
+            const isRed = element.classList.contains('red-cube');
+            const position = {
+                number: teamNumber,
+                top: element.offsetTop - pos2,
+                left: element.offsetLeft - pos1
+            };
+            
+            if (isRed) {
+                // Update or add position in red teams
+                const index = fieldTeams.red.findIndex(t => t.number === teamNumber);
+                if (index >= 0) {
+                    fieldTeams.red[index] = position;
+                } else {
+                    fieldTeams.red.push(position);
+                }
+            } else {
+                // Update or add position in blue teams
+                const index = fieldTeams.blue.findIndex(t => t.number === teamNumber);
+                if (index >= 0) {
+                    fieldTeams.blue[index] = position;
+                } else {
+                    fieldTeams.blue.push(position);
+                }
+            }
+            
+            saveFieldTeams();
+        }
+        
+        function closeDragElement() {
+            // Stop moving when mouse button is released
+            document.onmouseup = null;
+            document.onmousemove = null;
+        }
+    }
+
+    // Add event listeners
+    function setupEventListeners() {
+        // Navigation buttons
+        loadTeamsBtn.addEventListener('click', function() {
+            loadTeamsModal.style.display = 'block';
+        });
+        
+        notesBtn.addEventListener('click', function() {
+            updateTeamSelect();
+            notesModal.style.display = 'block';
+        });
+        
+        allianceBtn.addEventListener('click', function() {
+            mainPage.style.display = 'none';
+            alliancePage.style.display = 'block';
+            fieldPage.style.display = 'none';
+            updateAllianceTeamsDisplay();
+            restoreAlliancePositions();
+        });
+        
+        showFieldBtn.addEventListener('click', function() {
+            mainPage.style.display = 'none';
+            alliancePage.style.display = 'none';
+            fieldPage.style.display = 'block';
+            initCanvas();
+            createFieldTeamCubes();
+        });
+        
+        loadMatchesBtn.addEventListener('click', function() {
+            loadMatchesModal.style.display = 'block';
+        });
+        
+        mainPageBtn.addEventListener('click', function() {
+            mainPage.style.display = 'block';
+            alliancePage.style.display = 'none';
+            fieldPage.style.display = 'none';
+            updateMatchTeamsDisplay();
+        });
+        backBtn.addEventListener('click', function() {
+            window.location = '/'
+        });
+        
+        toggleDarkModeBtn.addEventListener('click', toggleDarkMode);
+        
+        // Modal close buttons
+        closeTeamsModal.addEventListener('click', function() {
+            loadTeamsModal.style.display = 'none';
+        });
+        
+        closeNotesModal.addEventListener('click', function() {
+            notesModal.style.display = 'none';
+        });
+        
+        closeMatchesModal.addEventListener('click', function() {
+            loadMatchesModal.style.display = 'none';
+        });
+        
+        // Save teams button
+        saveTeamsBtn.addEventListener('click', function() {
+            const input = teamsInput.value;
+            teams = parseTeams(input);
+            saveTeams();
+            loadTeamsModal.style.display = 'none';
+            updateTeamSelect();
+            updateMatchTeamsDisplay();
+            updateAllianceTeamsDisplay();
+        });
+        
+        // Save matches button
+        saveMatchesBtn.addEventListener('click', function() {
+            const input = matchesInput.value;
+            matches = parseMatches(input);
+            saveMatches();
+            loadMatchesModal.style.display = 'none';
+            updateMatchTeamsDisplay();
+            createFieldTeamCubes();
+        });
+        
+        // Team selection change
+        teamSelect.addEventListener('change', function() {
+            const teamNumber = this.value;
+            if (teamNumber) {
+                updateModalNotesList(teamNumber);
+            } else {
+                modalNotesList.innerHTML = '';
+            }
+        });
+        
+        // Save note button
+        saveNoteBtn.addEventListener('click', function() {
+            const teamNumber = teamSelect.value;
+            const note = noteInput.value.trim();
+            
+            if (teamNumber && note) {
+                if (!notes[teamNumber]) {
+                    notes[teamNumber] = [];
+                }
+                
+                notes[teamNumber].push(note);
+                saveNotes();
+                
+                noteInput.value = '';
+                updateModalNotesList(teamNumber);
+                
+                // Update main page notes if the team is selected
+                if (selectedTeam === teamNumber) {
+                    updateNotesList(teamNumber);
+                }
+            }
+        });
+        
+        // Delete note (modal)
+        modalNotesList.addEventListener('click', function(e) {
+            if (e.target.classList.contains('delete-note')) {
+                const teamNumber = e.target.getAttribute('data-team');
+                const index = parseInt(e.target.getAttribute('data-index'));
+                
+                if (notes[teamNumber] && index >= 0 && index < notes[teamNumber].length) {
+                    notes[teamNumber].splice(index, 1);
+                    saveNotes();
+                    updateModalNotesList(teamNumber);
+                    
+                    // Update main page notes if the team is selected
+                    if (selectedTeam === teamNumber) {
+                        updateNotesList(teamNumber);
+                    }
+                }
+            }
+        });
+        
+        // Update match button
+        updateMatchBtn.addEventListener('click', function() {
+            currentMatch = parseInt(matchNumber.value);
+            saveMatches();
+            updateMatchTeamsDisplay();
+            createFieldTeamCubes();
+        });
+        
+        // Add note button (main page)
+        addNoteBtn.addEventListener('click', function() {
+            const note = newNoteInput.value.trim();
+            
+            if (selectedTeam && note) {
+                if (!notes[selectedTeam]) {
+                    notes[selectedTeam] = [];
+                }
+                
+                notes[selectedTeam].push(note);
+                saveNotes();
+                
+                newNoteInput.value = '';
+                updateNotesList(selectedTeam);
+                updateModalNotesList(selectedTeam);
+            }
+        });
+        
+        // Delete note (main page)
+        notesList.addEventListener('click', function(e) {
+            if (e.target.classList.contains('delete-note')) {
+                const teamNumber = e.target.getAttribute('data-team');
+                const index = parseInt(e.target.getAttribute('data-index'));
+                
+                if (notes[teamNumber] && index >= 0 && index < notes[teamNumber].length) {
+                    notes[teamNumber].splice(index, 1);
+                    saveNotes();
+                    updateNotesList(teamNumber);
+                    updateModalNotesList(teamNumber);
+                }
+            }
+        });
+        
+        // Drawing controls
+        drawBtn.addEventListener('click', function() {
+            isDrawing = true;
+            drawingContext.strokeStyle = '#69369c';
+        });
+        
+        eraseBtn.addEventListener('click', function() {
+            isDrawing = true;
+            drawingContext.strokeStyle = 'white';
+            drawingContext.lineWidth = 5;
+        });
+        
+        resetDrawingBtn.addEventListener('click', function() {
+            drawingContext.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+        });
+        
+        resetPositionBtn.addEventListener('click', function() {
+            fieldTeams = { red: [], blue: [] };
+            saveFieldTeams();
+            createFieldTeamCubes();
+        });
+        
+        // Canvas drawing
+        drawingCanvas.addEventListener('mousedown', startDrawing);
+drawingCanvas.addEventListener('touchstart', startDrawing);
+
+function startDrawing(e) {
+    let touchEvent = e;
+    if (e.type === 'touchstart') {
+        touchEvent = e.touches[0];
+    }
+
+    const rect = drawingCanvas.getBoundingClientRect();
+    const x = touchEvent.clientX - rect.left;
+    const y = touchEvent.clientY - rect.top;
+
+    drawingContext.beginPath();
+    drawingContext.moveTo(x, y);
+
+    drawingCanvas.addEventListener('mousemove', draw);
+    drawingCanvas.addEventListener('mouseup', stopDrawing);
+    drawingCanvas.addEventListener('mouseout', stopDrawing);
+    drawingCanvas.addEventListener('touchmove', draw);
+    drawingCanvas.addEventListener('touchend', stopDrawing);
+    drawingCanvas.addEventListener('touchcancel', stopDrawing);
+
+    function draw(e) {
+        let drawEvent = e;
+        if (e.type === 'touchmove') {
+            drawEvent = e.touches[0];
+            e.preventDefault(); // Prevent scrolling on touch
+        }
+
+        const x = drawEvent.clientX - rect.left;
+        const y = drawEvent.clientY - rect.top;
+
+        drawingContext.lineTo(x, y);
+        drawingContext.stroke();
+    }
+
+    function stopDrawing() {
+        drawingCanvas.removeEventListener('mousemove', draw);
+        drawingCanvas.removeEventListener('mouseup', stopDrawing);
+        drawingCanvas.removeEventListener('mouseout', stopDrawing);
+        drawingCanvas.removeEventListener('touchmove', draw);
+        drawingCanvas.removeEventListener('touchend', stopDrawing);
+        drawingCanvas.removeEventListener('touchcancel', stopDrawing);
+    }
+}
+
+        
+        // Dropzone event listeners
+        document.querySelectorAll('.dropzone').forEach(dropzone => {
+            dropzone.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.classList.add('dropzone-highlight');
+            });
+            
+            dropzone.addEventListener('dragleave', function() {
+                this.classList.remove('dropzone-highlight');
+            });
+            
+            dropzone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.classList.remove('dropzone-highlight');
+                
+                const teamNumber = e.dataTransfer.getData('text/plain');
+                const team = teams.find(t => t.number === teamNumber);
+                
+                if (team) {
+                    // Check if it's an alliance position dropzone
+                    if (this.hasAttribute('data-alliance') && this.hasAttribute('data-position')) {
+                        const allianceNumber = this.getAttribute('data-alliance');
+                        const position = this.getAttribute('data-position');
+                        
+                        // Remove from previous position
+                        for (const aNumber in allianceData) {
+                            const alliance = allianceData[aNumber];
+                            
+                            if (alliance.captain === teamNumber) alliance.captain = null;
+                            if (alliance.first === teamNumber) alliance.first = null;
+                            if (alliance.second === teamNumber) alliance.second = null;
+                        }
+                        
+                        // Remove from pick lists
+                        myFirstPick = myFirstPick.filter(t => t !== teamNumber);
+                        mySecondPick = mySecondPick.filter(t => t !== teamNumber);
+                        teamsAboveUs = teamsAboveUs.filter(t => t !== teamNumber);
+                        
+                        // Add to new position
+                        allianceData[allianceNumber][position] = teamNumber;
+                        
+                        saveAllianceData();
+                        updateAllianceTeamsDisplay();
+                        restoreAlliancePositions();
+                    }
+                    // Check if it's a pick list dropzone
+                    else if (this.id === 'my-first-pick') {
+                        if (!myFirstPick.includes(teamNumber)) {
+                            myFirstPick.push(teamNumber);
+                            this.appendChild(createTeamCube(team));
+                            saveAllianceData();
+                        }
+                    }
+                    else if (this.id === 'my-second-pick') {
+                        if (!mySecondPick.includes(teamNumber)) {
+                            mySecondPick.push(teamNumber);
+                            this.appendChild(createTeamCube(team));
+                            saveAllianceData();
+                        }
+                    }
+                    else if (this.id === 'teams-above') {
+                        if (!teamsAboveUs.includes(teamNumber)) {
+                            teamsAboveUs.push(teamNumber);
+                            this.appendChild(createTeamCube(team));
+                            saveAllianceData();
+                        }
+                    }
+                }
+            });
+        });
+        
+        // Trash zone for removing teams from alliances
+        const allianceTrash = document.getElementById('alliance-trash');
+        
+        allianceTrash.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.style.backgroundColor = 'rgba(255, 77, 77, 0.2)';
+        });
+        
+        allianceTrash.addEventListener('dragleave', function() {
+            this.style.backgroundColor = '';
+        });
+        
+        allianceTrash.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.style.backgroundColor = '';
+            
+            const teamNumber = e.dataTransfer.getData('text/plain');
+            
+            // Remove from alliance positions
+            for (const allianceNumber in allianceData) {
+                const alliance = allianceData[allianceNumber];
+                
+                if (alliance.captain === teamNumber) {
+                    alliance.captain = null;
+                }
+                if (alliance.first === teamNumber) {
+                    alliance.first = null;
+                }
+                if (alliance.second === teamNumber) {
+                    alliance.second = null;
+                }
+            }
+            
+            // Remove from pick lists
+            myFirstPick = myFirstPick.filter(t => t !== teamNumber);
+            mySecondPick = mySecondPick.filter(t => t !== teamNumber);
+            teamsAboveUs = teamsAboveUs.filter(t => t !== teamNumber);
+            
+            saveAllianceData();
+            updateAllianceTeamsDisplay();
+            restoreAlliancePositions();
+        });
+        
+        // Window resize event
+        window.addEventListener('resize', function() {
+            if (fieldPage.style.display !== 'none') {
+                initCanvas();
+            }
+        });
+    }
+
+    // Initialize the application
+    function init() {
+        initFromLocalStorage();
+        setupEventListeners();
+        updateMatchTeamsDisplay();
+    }
+
+    // Run initialization on page load
+    document.addEventListener('DOMContentLoaded', init);
+</script>
