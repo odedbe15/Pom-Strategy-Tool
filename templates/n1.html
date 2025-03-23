@@ -457,6 +457,90 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        .timer-controls {
+            margin-bottom: 20px;
+        }
+
+        .timer-controls button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 15px;
+            margin: 0 5px;
+            cursor: pointer;
+        }
+
+        .lap-buttons {
+            margin-bottom: 20px;
+        }
+
+        .lap-buttons button {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 15px;
+            margin: 0 5px;
+            cursor: pointer;
+        }
+
+        .lap-times {
+            margin-top: 20px;
+        }
+
+        .lap-times ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .lap-times li {
+            background-color: #f0f0f0;
+            margin-bottom: 5px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .dark-mode .lap-times li {
+            background-color: #404040;
+        }
+
+        .driving-analytics-container {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .timer-section {
+            flex: 1;
+            margin-right: 20px;
+        }
+
+        .notes-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .notes-section textarea {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid var(--primary-color);
+            border-radius: 5px;
+            resize: none;
+            font-size: 16px; /* Prevent zoom on tablets */
+        }
+
+        @media (max-width: 768px) {
+            .driving-analytics-container {
+                flex-direction: column;
+            }
+
+            .timer-section {
+                margin-right: 0;
+                margin-bottom: 20px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -477,6 +561,7 @@
             <button id="alliance-nav">Alliance Selection</button>
             <button id="field-nav">Field View</button>
             <button id="load-matches-nav">Load Matches</button>
+            <button id="driving-analytics-nav">Driving Analytics</button>
         </nav>
 
         <div id="main-page" class="page active">
@@ -571,6 +656,34 @@
                 <img src="static/topview.gif" alt="Field View" id="field-image">
                 <canvas id="drawing-canvas"></canvas>
                 <div id="robots-container"></div>
+            </div>
+        </div>
+
+        <div id="driving-analytics-page" class="page">
+            <h2>Driving Analytics</h2>
+            <div class="driving-analytics-container">
+                <div class="timer-section">
+                    <div class="timer-controls">
+                        <button id="start-timer">Start</button>
+                        <button id="stop-timer">Stop</button>
+                        <button id="reset-timer">Reset</button>
+                        <span id="timer-display">0.0s</span>
+                    </div>
+                    <div class="lap-buttons">
+                        <button id="lap1">L1</button>
+                        <button id="lap2">L2</button>
+                        <button id="lap3">L3</button>
+                        <button id="lap4">Algae + Coral</button>
+                    </div>
+                    <div class="lap-times">
+                        <h3>Lap Times</h3>
+                        <ul id="lap-times-list"></ul>
+                    </div>
+                </div>
+                <div class="notes-section">
+                    <h3>Notes</h3>
+                    <textarea id="driving-notes" placeholder="Write your notes here..."></textarea>
+                </div>
             </div>
         </div>
 
@@ -1210,10 +1323,10 @@ Quals 2
 
             function makeDraggable(element) {
                 let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-                
+
                 element.addEventListener('mousedown', dragMouseDown);
-                element.addEventListener('touchstart', dragTouchStart, { passive: false });
-                
+                element.addEventListener('touchstart', dragTouchStart, { passive: false }); // Added touchstart event listener
+
                 function dragMouseDown(e) {
                     e.preventDefault();
                     // Get the mouse cursor position at startup
@@ -1222,8 +1335,8 @@ Quals 2
                     document.addEventListener('mouseup', closeDragElement);
                     document.addEventListener('mousemove', elementDrag);
                 }
-                
-                function dragTouchStart(e) {
+
+                function dragTouchStart(e) { // Added function to handle touchstart event
                     e.preventDefault();
                     // Get the touch position at startup
                     pos3 = e.touches[0].clientX;
@@ -1231,7 +1344,7 @@ Quals 2
                     document.addEventListener('touchend', closeDragElement);
                     document.addEventListener('touchmove', elementTouchDrag, { passive: false });
                 }
-                
+
                 function elementDrag(e) {
                     e.preventDefault();
                     // Calculate the new cursor position
@@ -1239,46 +1352,46 @@ Quals 2
                     pos2 = pos4 - e.clientY;
                     pos3 = e.clientX;
                     pos4 = e.clientY;
-                    
+
                     // Set the element's new position
                     updateElementPosition(element, pos1, pos2);
                 }
-                
-                function elementTouchDrag(e) {
+
+                function elementTouchDrag(e) { // Added function to handle touchmove event
                     e.preventDefault();
                     // Calculate the new touch position
                     pos1 = pos3 - e.touches[0].clientX;
                     pos2 = pos4 - e.touches[0].clientY;
                     pos3 = e.touches[0].clientX;
                     pos4 = e.touches[0].clientY;
-                    
+
                     // Set the element's new position
                     updateElementPosition(element, pos1, pos2);
                 }
-                
+
                 function updateElementPosition(el, pos1, pos2) {
                     const fieldContainer = document.getElementById('field-container');
                     const fieldRect = fieldContainer.getBoundingClientRect();
-                    
+
                     // Get current position
                     let top = el.offsetTop - pos2;
                     let left = el.offsetLeft - pos1;
-                    
+
                     // Constrain to field boundaries
                     top = Math.max(0, Math.min(top, fieldImage.height - el.offsetHeight));
                     left = Math.max(0, Math.min(left, fieldImage.width - el.offsetWidth));
-                    
+
                     // Update position
                     el.style.top = top + 'px';
                     el.style.left = left + 'px';
                 }
-                
+
                 function closeDragElement() {
                     // Stop moving when mouse button/touch is released
                     document.removeEventListener('mouseup', closeDragElement);
                     document.removeEventListener('mousemove', elementDrag);
-                    document.removeEventListener('touchend', closeDragElement);
-                    document.removeEventListener('touchmove', elementTouchDrag);
+                    document.removeEventListener('touchend', closeDragElement); // Added touchend event listener
+                    document.removeEventListener('touchmove', elementTouchDrag); // Added touchmove event listener
                 }
             }
 
@@ -1362,6 +1475,63 @@ Quals 2
 
             function handleTouchEnd() {
                 isDrawing = false;
+            }
+
+            // Driving Analytics
+            let timerInterval;
+            let startTime;
+            const lapTimesList = document.getElementById('lap-times-list');
+            const timerDisplay = document.getElementById('timer-display'); // Added timer display element
+
+            document.getElementById('start-timer').addEventListener('click', function() {
+                startTime = Date.now();
+                timerInterval = setInterval(updateTimer, 100);
+            });
+
+            document.getElementById('stop-timer').addEventListener('click', function() {
+                clearInterval(timerInterval);
+            });
+
+            document.getElementById('reset-timer').addEventListener('click', function() {
+                resetTimer();
+                lapTimesList.innerHTML = ''; // Clear lap times
+            });
+
+            document.getElementById('lap1').addEventListener('click', function() {
+                recordLap('L1');
+            });
+
+            document.getElementById('lap2').addEventListener('click', function() {
+                recordLap('L2');
+            });
+
+            document.getElementById('lap3').addEventListener('click', function() {
+                recordLap('L3');
+            });
+
+            document.getElementById('lap4').addEventListener('click', function() {
+                recordLap('Algae + Coral');
+            });
+
+            function updateTimer() {
+                const elapsedTime = Date.now() - startTime;
+                timerDisplay.textContent = (elapsedTime / 1000).toFixed(1) + 's'; // Update timer display
+            }
+
+            function recordLap(lapName) {
+                const elapsedTime = Date.now() - startTime;
+                const lapTime = (elapsedTime / 1000).toFixed(1) + 's';
+                const lapItem = document.createElement('li');
+                lapItem.textContent = `${lapName}: ${lapTime}`;
+                lapTimesList.appendChild(lapItem);
+                resetTimer(); // Reset timer after recording lap
+            }
+
+            function resetTimer() {
+                clearInterval(timerInterval);
+                startTime = Date.now();
+                timerDisplay.textContent = '0.0s'; // Reset timer display
+                timerInterval = setInterval(updateTimer, 100); // Restart the timer
             }
 
             // Initialize the first page
