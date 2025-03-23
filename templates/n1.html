@@ -3,189 +3,134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FRC Alliance Selection Tool</title>
+    <title>FRC Scouting Dashboard</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
+        :root {
+            --primary-color: #69369c;
+            --secondary-color: #9157c7;
+            --light-bg: #f5f5f5;
+            --dark-bg: #202020;
+            --light-text: #333;
+            --dark-text: #f0f0f0;
+            --red-alliance: #ff4d4d;
+            --blue-alliance: #4d79ff;
+        }
+
+        * {
             margin: 0;
-            padding: 10px;
-            overflow: hidden;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            color: var(--light-text);
+            transition: all 0.3s ease;
+        }
+
+        body.dark-mode {
+            background-color: var(--dark-bg);
+            color: var(--dark-text);
         }
 
         .container {
-            display: flex;
-            flex-direction: column;
-            height: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
         }
 
-        .top-section {
+        header {
             display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            background-color: var(--primary-color);
+            padding: 10px 20px;
+            border-radius: 10px;
+            color: white;
         }
 
-        .alliance-section {
+        .logo-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-container img {
+            height: 40px;
+            margin-right: 10px;
+        }
+
+        nav {
+            display: flex;
+            background-color: var(--secondary-color);
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 20px;
             overflow-x: auto;
             white-space: nowrap;
-            margin-bottom: 10px;
         }
 
-        .teams-section {
-            flex: 1;
-            overflow-y: auto;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            align-content: flex-start;
-            padding: 10px;
-            border: 1px solid #ccc;
-            background-color: #f9f9f9;
-            min-height: 100px;
-        }
-
-        .list-container {
-            flex: 1;
-            min-width: 200px;
-            border: 1px solid #ccc;
-            padding: 10px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .list-title {
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .list-content {
-            flex: 1;
-            min-height: 100px;
-            border: 1px dashed #ccc;
-            padding: 5px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 5px;
-            align-content: flex-start;
-        }
-
-        .alliance-table {
-            border-collapse: collapse;
-            margin-bottom: 10px;
-        }
-
-        .alliance-table th, .alliance-table td {
-            border: 1px solid #ccc;
-            padding: 8px;
-            text-align: center;
-            min-width: 100px;
-        }
-
-        .alliance-table th {
-            background-color: #f0f0f0;
-        }
-
-        .team-item {
-            display: inline-block;
-            width: 60px;
-            height: 40px;
-            background-color: #e0e0e0;
-            border: 1px solid #999;
-            text-align: center;
-            line-height: 40px;
-            cursor: grab;
-            position: relative;
-            user-select: none;
-        }
-
-        .team-item.red {
-            background-color: #ffcccc;
-            border-color: #ff9999;
-        }
-
-        .team-item.blue {
-            background-color: #cce5ff;
-            border-color: #99c2ff;
-        }
-
-        .team-tooltip {
-            position: absolute;
-            background-color: #333;
+        nav button {
+            background-color: var(--primary-color);
             color: white;
-            padding: 5px;
-            border-radius: 3px;
-            white-space: nowrap;
-            z-index: 1000;
-            visibility: hidden;
-            top: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-
-        .team-item:hover .team-tooltip {
-            visibility: visible;
-        }
-
-        .button-container {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-
-        button {
-            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 15px;
+            margin: 0 5px;
             cursor: pointer;
+            transition: background-color 0.3s;
         }
 
-        #loadBtn {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
+        nav button:hover {
+            background-color: var(--secondary-color);
         }
 
-        #removeBtn {
-            background-color: #f44336;
-            color: white;
-            border: none;
+        .page {
+            display: none;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
-        #redBtn {
-            background-color: #ff9999;
-            border: 1px solid #ff6666;
+        .page.active {
+            display: block;
         }
 
-        #blueBtn {
-            background-color: #99c2ff;
-            border: 1px solid #66a3ff;
-        }
-
-        .dropzone {
-            min-height: 40px;
-            border: 1px dashed #ccc;
-            background-color: #fafafa;
+        .dark-mode .page {
+            background-color: #303030;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
         }
 
         /* Modal styles */
         .modal {
             display: none;
             position: fixed;
-            z-index: 1000;
-            left: 0;
             top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.4);
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
         }
 
         .modal-content {
-            background-color: #fefefe;
-            margin: 10% auto;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
             padding: 20px;
-            border: 1px solid #888;
+            border-radius: 10px;
             width: 80%;
             max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .dark-mode .modal-content {
+            background-color: #303030;
         }
 
         .close {
@@ -200,396 +145,1227 @@
             color: black;
         }
 
-        #teamsTextarea {
-            width: 100%;
-            height: 300px;
+        .dark-mode .close:hover {
+            color: white;
+        }
+
+        /* Team box styles */
+        .team-box {
+            display: inline-block;
+            width: 80px;
+            height: 80px;
+            margin: 5px;
+            border: 2px solid var(--primary-color);
+            border-radius: 8px;
+            text-align: center;
+            line-height: 80px;
+            font-weight: bold;
+            background-color: #f0f0f0;
+            cursor: move;
+            position: relative;
+            user-select: none;
+        }
+
+        .dark-mode .team-box {
+            background-color: #404040;
+        }
+
+        .team-box.red {
+            background-color: var(--red-alliance);
+            color: white;
+        }
+
+        .team-box.blue {
+            background-color: var(--blue-alliance);
+            color: white;
+        }
+
+        .team-detail {
+            display: none;
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 5px;
+            border-radius: 5px;
+            width: max-content;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        /* Alliance page styles */
+        #alliance-page {
+            overflow: hidden;
+            display: none;
+        }
+
+        .alliance-container {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .drag-area {
+            min-height: 150px;
+            border: 2px dashed var(--primary-color);
+            border-radius: 10px;
+            padding: 10px;
+            margin: 10px 0;
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start;
+        }
+
+        .pick-lists {
+            width: 30%;
+        }
+
+        .available-teams {
+            width: 65%;
+            border: 2px solid var(--primary-color);
+            border-radius: 10px;
+            padding: 10px;
+            height: 500px;
+            overflow-y: auto;
+        }
+
+        .color-buttons {
+            margin: 10px 0;
+        }
+
+        .color-buttons button {
+            padding: 5px 10px;
+            margin-right: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #red-button {
+            background-color: var(--red-alliance);
+            color: white;
+        }
+
+        #blue-button {
+            background-color: var(--blue-alliance);
+            color: white;
+        }
+
+        #normal-button {
+            background-color: #f0f0f0;
+            color: black;
+        }
+
+        .dark-mode #normal-button {
+            background-color: #404040;
+            color: white;
+        }
+
+        /* Field view styles */
+        #field-page {
+            text-align: center;
+        }
+
+        #field-container {
+            position: relative;
+            display: inline-block;
+            margin: 20px auto;
+            border: 2px solid var(--primary-color);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        #field-image {
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+
+        #drawing-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            cursor: crosshair;
+        }
+
+        .robot-on-field {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            cursor: move;
+            z-index: 100;
+        }
+
+        .robot-red {
+            background-color: rgba(255, 77, 77, 0.8);
+            color: white;
+        }
+
+        .robot-blue {
+            background-color: rgba(77, 121, 255, 0.8);
+            color: white;
+        }
+
+        .field-controls {
+            margin: 10px 0;
+        }
+
+        .field-controls button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 15px;
+            margin: 0 5px;
+            cursor: pointer;
+        }
+
+        /* Main page styles */
+        .match-controls {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .match-controls label {
+            margin-right: 10px;
+        }
+
+        .match-controls input {
+            width: 60px;
+            padding: 5px;
+            border: 1px solid var(--primary-color);
+            border-radius: 5px;
+        }
+
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-gap: 15px;
+        }
+
+        .alliance-teams {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .team-card {
+            border: 2px solid var(--primary-color);
+            border-radius: 8px;
+            padding: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .team-card:hover {
+            background-color: #f0f0f0;
+        }
+
+        .dark-mode .team-card:hover {
+            background-color: #404040;
+        }
+
+        .red-alliance .team-card {
+            border-color: var(--red-alliance);
+        }
+
+        .blue-alliance .team-card {
+            border-color: var(--blue-alliance);
+        }
+
+        .notes-container {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid var(--primary-color);
+            border-radius: 8px;
+        }
+
+        .notes-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 10px;
+        }
+
+        .notes-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .note-item {
+            padding: 8px;
+            margin-bottom: 5px;
+            border-radius: 5px;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .dark-mode .note-item {
+            background-color: #404040;
+        }
+
+        .note-item button {
+            background-color: #ff4d4d;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 2px 5px;
+            cursor: pointer;
+        }
+
+        .add-note-form {
+            display: flex;
+            margin-top: 10px;
+        }
+
+        .add-note-form input {
+            flex-grow: 1;
+            padding: 8px;
+            border: 1px solid var(--primary-color);
+            border-radius: 5px 0 0 5px;
+        }
+
+        .add-note-form button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 0 5px 5px 0;
+            padding: 8px 15px;
+            cursor: pointer;
+        }
+
+        /* Responsive styles */
+        @media (max-width: 768px) {
+            .alliance-container {
+                flex-direction: column;
+            }
+
+            .pick-lists, .available-teams {
+                width: 100%;
+            }
+
+            .team-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="button-container">
-            <button id="loadBtn">Load Teams</button>
-            <button id="removeBtn">Remove</button>
-            <button id="redBtn">Red</button>
-            <button id="blueBtn">Blue</button>
-        </div>
-
-        <div class="top-section">
-            <div class="list-container">
-                <div class="list-title">Teams Above Me</div>
-                <div class="list-content" id="teamsAboveMe"></div>
+        <header>
+            <div class="logo-container">
+                <img src="static/FRC.png" alt="FRC Logo">
+                <img src="static/POM.png" alt="POM Logo">
+                <h1>FRC Scouting Dashboard</h1>
             </div>
-            <div class="list-container">
-                <div class="list-title">My 1st Pick</div>
-                <div class="list-content" id="my1stPick"></div>
+            <button id="dark-mode-toggle">🌙</button>
+        </header>
+
+        <nav>
+            <button id="main-nav">Main</button>
+            <button id="load-teams-nav">Load Teams</button>
+            <button id="notes-nav">Notes</button>
+            <button id="alliance-nav">Alliance Selection</button>
+            <button id="field-nav">Field View</button>
+            <button id="load-matches-nav">Load Matches</button>
+        </nav>
+
+        <div id="main-page" class="page active">
+            <div class="match-controls">
+                <label for="match-number">Match #:</label>
+                <input type="number" id="match-number" min="1" value="1">
+                <button id="update-match">Update</button>
             </div>
-            <div class="list-container">
-                <div class="list-title">My 2nd Pick</div>
-                <div class="list-content" id="my2ndPick"></div>
+
+            <div class="team-grid">
+                <div class="alliance-teams red-alliance">
+                    <h3>Red Alliance</h3>
+                    <div class="team-card" data-team-position="red1">
+                        <div class="team-number">Team #</div>
+                        <div class="team-name">Team Name</div>
+                    </div>
+                    <div class="team-card" data-team-position="red2">
+                        <div class="team-number">Team #</div>
+                        <div class="team-name">Team Name</div>
+                    </div>
+                    <div class="team-card" data-team-position="red3">
+                        <div class="team-number">Team #</div>
+                        <div class="team-name">Team Name</div>
+                    </div>
+                </div>
+
+                <div class="alliance-teams blue-alliance">
+                    <h3>Blue Alliance</h3>
+                    <div class="team-card" data-team-position="blue1">
+                        <div class="team-number">Team #</div>
+                        <div class="team-name">Team Name</div>
+                    </div>
+                    <div class="team-card" data-team-position="blue2">
+                        <div class="team-number">Team #</div>
+                        <div class="team-name">Team Name</div>
+                    </div>
+                    <div class="team-card" data-team-position="blue3">
+                        <div class="team-number">Team #</div>
+                        <div class="team-name">Team Name</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="notes-container" style="display: none;">
+                <div class="notes-heading">
+                    <h3>Notes for Team <span id="notes-team-number"></span></h3>
+                </div>
+                <div class="notes-list" id="team-notes-list"></div>
+                <div class="add-note-form">
+                    <input type="text" id="new-note-input" placeholder="Add a note...">
+                    <button id="add-note-button">Add</button>
+                </div>
             </div>
         </div>
 
-        <div class="alliance-section">
-            <table class="alliance-table">
-                <thead>
-                    <tr>
-                        <th>Alliance</th>
-                        <th>Captain</th>
-                        <th>1st Pick</th>
-                        <th>2nd Pick</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Alliance 1</td>
-                        <td><div class="dropzone" data-position="captain1"></div></td>
-                        <td><div class="dropzone" data-position="pick1_1"></div></td>
-                        <td><div class="dropzone" data-position="pick1_2"></div></td>
-                    </tr>
-                    <tr>
-                        <td>Alliance 2</td>
-                        <td><div class="dropzone" data-position="captain2"></div></td>
-                        <td><div class="dropzone" data-position="pick2_1"></div></td>
-                        <td><div class="dropzone" data-position="pick2_2"></div></td>
-                    </tr>
-                    <tr>
-                        <td>Alliance 3</td>
-                        <td><div class="dropzone" data-position="captain3"></div></td>
-                        <td><div class="dropzone" data-position="pick3_1"></div></td>
-                        <td><div class="dropzone" data-position="pick3_2"></div></td>
-                    </tr>
-                    <tr>
-                        <td>Alliance 4</td>
-                        <td><div class="dropzone" data-position="captain4"></div></td>
-                        <td><div class="dropzone" data-position="pick4_1"></div></td>
-                        <td><div class="dropzone" data-position="pick4_2"></div></td>
-                    </tr>
-                    <tr>
-                        <td>Alliance 5</td>
-                        <td><div class="dropzone" data-position="captain5"></div></td>
-                        <td><div class="dropzone" data-position="pick5_1"></div></td>
-                        <td><div class="dropzone" data-position="pick5_2"></div></td>
-                    </tr>
-                    <tr>
-                        <td>Alliance 6</td>
-                        <td><div class="dropzone" data-position="captain6"></div></td>
-                        <td><div class="dropzone" data-position="pick6_1"></div></td>
-                        <td><div class="dropzone" data-position="pick6_2"></div></td>
-                    </tr>
-                    <tr>
-                        <td>Alliance 7</td>
-                        <td><div class="dropzone" data-position="captain7"></div></td>
-                        <td><div class="dropzone" data-position="pick7_1"></div></td>
-                        <td><div class="dropzone" data-position="pick7_2"></div></td>
-                    </tr>
-                    <tr>
-                        <td>Alliance 8</td>
-                        <td><div class="dropzone" data-position="captain8"></div></td>
-                        <td><div class="dropzone" data-position="pick8_1"></div></td>
-                        <td><div class="dropzone" data-position="pick8_2"></div></td>
-                    </tr>
-                </tbody>
-            </table>
+        <div id="alliance-page" class="page">
+            <div class="alliance-container">
+                <div class="pick-lists">
+                    <h3>Pick Lists</h3>
+                    
+                    <h4>Teams Above Us</h4>
+                    <div id="teams-above-list" class="drag-area"></div>
+                    
+                    <h4>First Pick</h4>
+                    <div id="first-pick-list" class="drag-area"></div>
+                    
+                    <h4>Second Pick</h4>
+                    <div id="second-pick-list" class="drag-area"></div>
+                    
+                    <div class="color-buttons">
+                        <button id="red-button">Red</button>
+                        <button id="blue-button">Blue</button>
+                        <button id="normal-button">Normal</button>
+                    </div>
+                </div>
+                
+                <div class="available-teams">
+                    <h3>Available Teams</h3>
+                    <div id="available-teams-container"></div>
+                </div>
+            </div>
         </div>
 
-        <div class="teams-section" id="allTeams">
-            <!-- Teams will be added here dynamically -->
+        <div id="field-page" class="page">
+            <div class="field-controls">
+                <button id="draw-toggle">Draw</button>
+                <button id="reset-drawing">Reset Drawing</button>
+                <button id="reset-robots">Reset Robots</button>
+            </div>
+            
+            <div id="field-container">
+                <img src="static/topview.gif" alt="Field View" id="field-image">
+                <canvas id="drawing-canvas"></canvas>
+                <div id="robots-container"></div>
+            </div>
         </div>
-    </div>
 
-    <!-- Modal for loading teams -->
-    <div id="loadTeamsModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Load Teams</h2>
-            <p>Paste team data in the format: team number, team name, location (each on a separate line)</p>
-            <textarea id="teamsTextarea" placeholder="1577
+        <!-- Load Teams Modal -->
+        <div id="load-teams-modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Load Teams</h2>
+                <p>Paste teams data in the format:</p>
+                <pre>1577
 Steampunk
 Raanana, HaMerkaz, Israel
 1580
 The Blue Monkeys
-Ashkelon, HaDarom, Israel"></textarea>
-            <button id="submitTeams">Submit</button>
+Ashkelon, HaDarom, Israel</pre>
+                <textarea id="teams-input" rows="10" style="width: 100%; margin-top: 10px;"></textarea>
+                <button id="load-teams-button" style="margin-top: 10px; padding: 8px 15px; background-color: var(--primary-color); color: white; border: none; border-radius: 5px; cursor: pointer;">Load Teams</button>
+            </div>
+        </div>
+
+        <!-- Notes Modal -->
+        <div id="notes-modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Team Notes</h2>
+                <div style="margin-bottom: 20px;">
+                    <label for="note-team-select">Select Team:</label>
+                    <select id="note-team-select" style="margin-left: 10px; padding: 5px;"></select>
+                </div>
+                <div id="modal-notes-list"></div>
+                <div style="margin-top: 15px; display: flex;">
+                    <input type="text" id="modal-new-note" placeholder="Add a note..." style="flex-grow: 1; padding: 8px; border: 1px solid var(--primary-color); border-radius: 5px 0 0 5px;">
+                    <button id="modal-add-note" style="background-color: var(--primary-color); color: white; border: none; border-radius: 0 5px 5px 0; padding: 8px 15px; cursor: pointer;">Add</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Load Matches Modal -->
+        <div id="load-matches-modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Load Matches</h2>
+                <p>Paste matches data in the format:</p>
+                <pre>Quals 1
+5635    1690    3065    4338    6104    1943
+Quals 2
+4416    7067    2096    6738    8223    5614</pre>
+                <textarea id="matches-input" rows="10" style="width: 100%; margin-top: 10px;"></textarea>
+                <button id="load-matches-button" style="margin-top: 10px; padding: 8px 15px; background-color: var(--primary-color); color: white; border: none; border-radius: 5px; cursor: pointer;">Load Matches</button>
+            </div>
         </div>
     </div>
 
     <script>
-        // Global variables
-        let teams = [];
-        let isRemoveMode = false;
-        let isRedMode = false;
-        let isBlueMode = false;
-        let currentDraggedTeam = null;
-
-        // DOM Elements
-        const allTeamsContainer = document.getElementById('allTeams');
-        const teamsAboveMe = document.getElementById('teamsAboveMe');
-        const my1stPick = document.getElementById('my1stPick');
-        const my2ndPick = document.getElementById('my2ndPick');
-        const loadBtn = document.getElementById('loadBtn');
-        const removeBtn = document.getElementById('removeBtn');
-        const redBtn = document.getElementById('redBtn');
-        const blueBtn = document.getElementById('blueBtn');
-        const loadTeamsModal = document.getElementById('loadTeamsModal');
-        const closeModal = document.querySelector('.close');
-        const submitTeamsBtn = document.getElementById('submitTeams');
-        const teamsTextarea = document.getElementById('teamsTextarea');
-        const dropzones = document.querySelectorAll('.dropzone');
-
-        // Check localStorage for saved teams
-        function loadSavedTeams() {
-            const savedTeams = localStorage.getItem('frcTeams');
-            if (savedTeams) {
-                teams = JSON.parse(savedTeams);
-                renderTeams();
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize local storage if not exists
+            if (!localStorage.getItem('teams')) {
+                localStorage.setItem('teams', JSON.stringify([]));
             }
-        }
+            if (!localStorage.getItem('matches')) {
+                localStorage.setItem('matches', JSON.stringify([]));
+            }
+            if (!localStorage.getItem('notes')) {
+                localStorage.setItem('notes', JSON.stringify({}));
+            }
+            if (!localStorage.getItem('pickLists')) {
+                localStorage.setItem('pickLists', JSON.stringify({
+                    teamsAbove: [],
+                    firstPick: [],
+                    secondPick: []
+                }));
+            }
 
-        // Save teams to localStorage
-        function saveTeams() {
-            localStorage.setItem('frcTeams', JSON.stringify(teams));
-        }
+            // DOM elements
+            const navButtons = document.querySelectorAll('nav button');
+            const pages = document.querySelectorAll('.page');
+            const darkModeToggle = document.getElementById('dark-mode-toggle');
+            const loadTeamsModal = document.getElementById('load-teams-modal');
+            const notesModal = document.getElementById('notes-modal');
+            const loadMatchesModal = document.getElementById('load-matches-modal');
+            const closeButtons = document.querySelectorAll('.close');
+            const loadTeamsButton = document.getElementById('load-teams-button');
+            const loadMatchesButton = document.getElementById('load-matches-button');
+            const matchNumberInput = document.getElementById('match-number');
+            const updateMatchButton = document.getElementById('update-match');
+            const noteTeamSelect = document.getElementById('note-team-select');
+            const modalAddNoteButton = document.getElementById('modal-add-note');
+            const teamCards = document.querySelectorAll('.team-card');
+            const notesContainer = document.querySelector('.notes-container');
+            const teamNotesList = document.getElementById('team-notes-list');
+            const newNoteInput = document.getElementById('new-note-input');
+            const addNoteButton = document.getElementById('add-note-button');
+            const redButton = document.getElementById('red-button');
+            const blueButton = document.getElementById('blue-button');
+            const normalButton = document.getElementById('normal-button');
+            const drawToggleButton = document.getElementById('draw-toggle');
+            const resetDrawingButton = document.getElementById('reset-drawing');
+            const resetRobotsButton = document.getElementById('reset-robots');
+            const fieldImage = document.getElementById('field-image');
+            const drawingCanvas = document.getElementById('drawing-canvas');
+            const robotsContainer = document.getElementById('robots-container');
 
-        // Parse the team data from textarea
-        function parseTeamData(data) {
-            const lines = data.trim().split('\n');
-            const parsedTeams = [];
-            
-            for (let i = 0; i < lines.length; i += 3) {
-                if (i + 2 < lines.length) {
-                    parsedTeams.push({
-                        number: lines[i].trim(),
-                        name: lines[i + 1].trim(),
-                        location: lines[i + 2].trim()
+            // Initialize canvas
+            let canvas, ctx;
+            let isDrawing = false;
+            let drawMode = false;
+            let activeColor = null;
+            let selectedTeamForNotes = null;
+
+            // Navigation
+            navButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const pageId = this.id.replace('-nav', '-page');
+                    pages.forEach(page => {
+                        page.classList.remove('active');
+                        page.style.display = 'none';
                     });
-                }
-            }
-            
-            return parsedTeams;
-        }
-
-        // Create team element
-        function createTeamElement(team) {
-            const teamElement = document.createElement('div');
-            teamElement.className = 'team-item';
-            teamElement.setAttribute('draggable', 'true');
-            teamElement.dataset.number = team.number;
-            teamElement.dataset.name = team.name;
-            teamElement.dataset.location = team.location;
-            teamElement.textContent = team.number;
-            
-            // Create tooltip
-            const tooltip = document.createElement('div');
-            tooltip.className = 'team-tooltip';
-            tooltip.textContent = `${team.name}\n${team.location}`;
-            teamElement.appendChild(tooltip);
-            
-            // Add drag events
-            teamElement.addEventListener('dragstart', handleDragStart);
-            teamElement.addEventListener('click', handleTeamClick);
-            
-            return teamElement;
-        }
-
-        // Render all teams
-        function renderTeams() {
-            allTeamsContainer.innerHTML = '';
-            teams.forEach(team => {
-                const teamElement = createTeamElement(team);
-                allTeamsContainer.appendChild(teamElement);
-            });
-        }
-
-        // Drag and Drop Handlers
-        function handleDragStart(e) {
-            currentDraggedTeam = e.target;
-            e.dataTransfer.setData('text/plain', e.target.dataset.number);
-            setTimeout(() => {
-                e.target.style.opacity = '0.4';
-            }, 0);
-        }
-
-        // Handle drag end to reset opacity
-        function handleDragEnd(e) {
-            e.target.style.opacity = '1';
-        }
-
-        // Setup dropzones
-        function setupDropzones() {
-            dropzones.forEach(zone => {
-                zone.addEventListener('dragover', (e) => {
-                    e.preventDefault();
-                    zone.classList.add('active');
-                });
-                
-                zone.addEventListener('dragleave', () => {
-                    zone.classList.remove('active');
-                });
-                
-                zone.addEventListener('drop', (e) => {
-                    e.preventDefault();
-                    zone.classList.remove('active');
+                    const targetPage = document.getElementById(pageId) || document.getElementById('main-page');
+                    targetPage.classList.add('active');
+                    targetPage.style.display = 'block';
                     
-                    if (currentDraggedTeam) {
-                        // Reset the opacity of the dragged item
-                        currentDraggedTeam.style.opacity = '1';
-                        
-                        // Check if the zone already has a team
-                        if (zone.querySelector('.team-item')) {
-                            return; // Don't allow dropping if already occupied
-                        }
-                        
-                        const clone = currentDraggedTeam.cloneNode(true);
-                        clone.style.opacity = '1'; // Ensure full opacity
-                        clone.addEventListener('dragstart', handleDragStart);
-                        clone.addEventListener('dragend', handleDragEnd);
-                        clone.addEventListener('click', handleTeamClick);
-                        
-                        zone.appendChild(clone);
-                        
-                        // Remove from original location if not from "all teams" area
-                        if (currentDraggedTeam.parentElement !== allTeamsContainer) {
-                            currentDraggedTeam.remove();
-                        }
-                        
-                        currentDraggedTeam = null;
+                    if (pageId === 'field-page') {
+                        initializeFieldView();
+                    } else if (pageId === 'alliance-page') {
+                        initializeAlliancePage();
                     }
                 });
             });
-        }
 
-        // Handle team click (for remove, red, blue modes)
-        function handleTeamClick(e) {
-            const teamElement = e.currentTarget;
-            
-            if (isRemoveMode) {
-                // If in a dropzone, remove it
-                if (teamElement.parentElement.classList.contains('dropzone') || 
-                    teamElement.parentElement.id === 'teamsAboveMe' ||
-                    teamElement.parentElement.id === 'my1stPick' ||
-                    teamElement.parentElement.id === 'my2ndPick') {
-                    teamElement.remove();
-                }
-                isRemoveMode = false;
-                removeBtn.style.opacity = '1';
-            } else if (isRedMode) {
-                teamElement.classList.remove('blue');
-                teamElement.classList.add('red');
-                isRedMode = false;
-                redBtn.style.opacity = '1';
-            } else if (isBlueMode) {
-                teamElement.classList.remove('red');
-                teamElement.classList.add('blue');
-                isBlueMode = false;
-                blueBtn.style.opacity = '1';
-            }
-        }
+            // Dark mode toggle
+            darkModeToggle.addEventListener('click', function() {
+                document.body.classList.toggle('dark-mode');
+                darkModeToggle.textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
+            });
 
-        // Setup list containers
-        function setupListContainers() {
-            const listContainers = [teamsAboveMe, my1stPick, my2ndPick];
-            
-            listContainers.forEach(container => {
-                container.addEventListener('dragover', (e) => {
-                    e.preventDefault();
-                    container.classList.add('active');
-                });
-                
-                container.addEventListener('dragleave', () => {
-                    container.classList.remove('active');
-                });
-                
-                container.addEventListener('drop', (e) => {
-                    e.preventDefault();
-                    container.classList.remove('active');
-                    
-                    if (currentDraggedTeam) {
-                        // Reset the opacity of the dragged item
-                        currentDraggedTeam.style.opacity = '1';
-                        
-                        const clone = currentDraggedTeam.cloneNode(true);
-                        clone.style.opacity = '1'; // Ensure full opacity
-                        clone.addEventListener('dragstart', handleDragStart);
-                        clone.addEventListener('dragend', handleDragEnd);
-                        clone.addEventListener('click', handleTeamClick);
-                        
-                        container.appendChild(clone);
-                        
-                        // Don't remove original if coming from all teams
-                        if (currentDraggedTeam.parentElement !== allTeamsContainer) {
-                            currentDraggedTeam.remove();
-                        }
-                        
-                        currentDraggedTeam = null;
-                    }
+            // Modal controls
+            document.getElementById('load-teams-nav').addEventListener('click', function() {
+                loadTeamsModal.style.display = 'block';
+            });
+
+            document.getElementById('notes-nav').addEventListener('click', function() {
+                populateTeamSelect();
+                notesModal.style.display = 'block';
+            });
+
+            document.getElementById('load-matches-nav').addEventListener('click', function() {
+                loadMatchesModal.style.display = 'block';
+            });
+
+            closeButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    this.closest('.modal').style.display = 'none';
                 });
             });
-        }
 
-        // Event listeners
-        loadBtn.addEventListener('click', () => {
-            loadTeamsModal.style.display = 'block';
-        });
+            window.addEventListener('click', function(event) {
+                if (event.target.classList.contains('modal')) {
+                    event.target.style.display = 'none';
+                }
+            });
 
-        closeModal.addEventListener('click', () => {
-            loadTeamsModal.style.display = 'none';
-        });
+            // Load teams
+            loadTeamsButton.addEventListener('click', function() {
+                const teamsInput = document.getElementById('teams-input').value.trim();
+                if (!teamsInput) return;
 
-        window.addEventListener('click', (e) => {
-            if (e.target === loadTeamsModal) {
+                const lines = teamsInput.split('\n');
+                const teams = [];
+
+                for (let i = 0; i < lines.length; i += 3) {
+                    if (i + 2 < lines.length) {
+                        teams.push({
+                            number: lines[i].trim(),
+                            name: lines[i + 1].trim(),
+                            location: lines[i + 2].trim()
+                        });
+                    }
+                }
+
+                localStorage.setItem('teams', JSON.stringify(teams));
                 loadTeamsModal.style.display = 'none';
+                populateTeamSelect();
+                alert('Teams loaded successfully!');
+            });
+
+            // Load matches
+            loadMatchesButton.addEventListener('click', function() {
+                const matchesInput = document.getElementById('matches-input').value.trim();
+                if (!matchesInput) return;
+
+                const lines = matchesInput.split('\n');
+                const matches = [];
+
+                for (let i = 0; i < lines.length; i += 2) {
+                    if (i + 1 < lines.length) {
+                        const matchName = lines[i].trim();
+                        const teams = lines[i + 1].trim().split(/\s+/);
+                        
+                        if (teams.length === 6) {
+                            matches.push({
+                                name: matchName,
+                                red: [teams[0], teams[1], teams[2]],
+                                blue: [teams[3], teams[4], teams[5]]
+                            });
+                        }
+                    }
+                }
+
+                localStorage.setItem('matches', JSON.stringify(matches));
+                loadMatchesModal.style.display = 'none';
+                updateMatchDisplay();
+                alert('Matches loaded successfully!');
+            });
+
+            // Update match display
+            updateMatchButton.addEventListener('click', updateMatchDisplay);
+
+            function updateMatchDisplay() {
+                const matchNumber = parseInt(matchNumberInput.value) || 1;
+                const matches = JSON.parse(localStorage.getItem('matches') || '[]');
+                const teams = JSON.parse(localStorage.getItem('teams') || '[]');
+                
+                if (matches.length === 0) {
+                    alert('No matches loaded. Please load matches first.');
+                    return;
+                }
+
+                const matchIndex = Math.min(Math.max(0, matchNumber - 1), matches.length - 1);
+                const match = matches[matchIndex];
+
+                if (!match) return;
+
+                // Update red alliance
+                updateTeamCard('red1', match.red[0], teams);
+                updateTeamCard('red2', match.red[1], teams);
+                updateTeamCard('red3', match.red[2], teams);
+
+                // Update blue alliance
+                updateTeamCard('blue1', match.blue[0], teams);
+                updateTeamCard('blue2', match.blue[1], teams);
+                updateTeamCard('blue3', match.blue[2], teams);
             }
-        });
 
-        submitTeamsBtn.addEventListener('click', () => {
-            const data = teamsTextarea.value;
-            teams = parseTeamData(data);
-            saveTeams();
-            renderTeams();
-            loadTeamsModal.style.display = 'none';
-        });
+            function updateTeamCard(position, teamNumber, teams) {
+                const card = document.querySelector(`[data-team-position="${position}"]`);
+                const team = teams.find(t => t.number === teamNumber);
+                
+                card.dataset.teamNumber = teamNumber;
+                
+                if (team) {
+                    card.querySelector('.team-number').textContent = teamNumber;
+                    card.querySelector('.team-name').textContent = team.name;
+                } else {
+                    card.querySelector('.team-number').textContent = teamNumber;
+                    card.querySelector('.team-name').textContent = 'Unknown Team';
+                }
+            }
 
-        removeBtn.addEventListener('click', () => {
-            isRemoveMode = true;
-            isRedMode = false;
-            isBlueMode = false;
-            removeBtn.style.opacity = '0.7';
-            redBtn.style.opacity = '1';
-            blueBtn.style.opacity = '1';
-        });
+            // Notes system
+            function populateTeamSelect() {
+                noteTeamSelect.innerHTML = '<option value="">Select a team</option>';
+                const teams = JSON.parse(localStorage.getItem('teams') || '[]');
+                
+                teams.forEach(team => {
+                    const option = document.createElement('option');
+                    option.value = team.number;
+                    option.textContent = `${team.number} - ${team.name}`;
+                    noteTeamSelect.appendChild(option);
+                });
+            }
 
-        redBtn.addEventListener('click', () => {
-            isRedMode = true;
-            isRemoveMode = false;
-            isBlueMode = false;
-            redBtn.style.opacity = '0.7';
-            removeBtn.style.opacity = '1';
-            blueBtn.style.opacity = '1';
-        });
-
-        blueBtn.addEventListener('click', () => {
-            isBlueMode = true;
-            isRemoveMode = false;
-            isRedMode = false;
-            blueBtn.style.opacity = '0.7';
-            removeBtn.style.opacity = '1';
-            redBtn.style.opacity = '1';
-        });
-
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            loadSavedTeams();
-            setupDropzones();
-            setupListContainers();
-            
-            // Add global dragend handler to document
-            document.addEventListener('dragend', (e) => {
-                if (e.target.classList.contains('team-item')) {
-                    e.target.style.opacity = '1';
+            noteTeamSelect.addEventListener('change', function() {
+                const teamNumber = this.value;
+                if (teamNumber) {
+                    renderTeamNotes(teamNumber, 'modal-notes-list');
+                } else {
+                    document.getElementById('modal-notes-list').innerHTML = '';
                 }
             });
+
+            modalAddNoteButton.addEventListener('click', function() {
+                const teamNumber = noteTeamSelect.value;
+                const noteText = document.getElementById('modal-new-note').value.trim();
+                
+                if (teamNumber && noteText) {
+                    addNoteToTeam(teamNumber, noteText);
+                    renderTeamNotes(teamNumber, 'modal-notes-list');
+                    document.getElementById('modal-new-note').value = '';
+                }
+            });
+
+            // Add note to team
+            function addNoteToTeam(teamNumber, noteText) {
+                const notes = JSON.parse(localStorage.getItem('notes') || '{}');
+                
+                if (!notes[teamNumber]) {
+                    notes[teamNumber] = [];
+                }
+                
+                notes[teamNumber].push({
+                    id: Date.now(),
+                    text: noteText,
+                    date: new Date().toLocaleString()
+                });
+                
+                localStorage.setItem('notes', JSON.stringify(notes));
+            }
+
+            // Render team notes
+            function renderTeamNotes(teamNumber, containerId) {
+                const container = document.getElementById(containerId);
+                container.innerHTML = '';
+                
+                const notes = JSON.parse(localStorage.getItem('notes') || '{}');
+                const teamNotes = notes[teamNumber] || [];
+                
+                if (teamNotes.length === 0) {
+                    container.innerHTML = '<p>No notes for this team.</p>';
+                    return;
+                }
+                
+                teamNotes.forEach(note => {
+                    const noteItem = document.createElement('div');
+                    noteItem.className = 'note-item';
+                    noteItem.innerHTML = `
+                        <div>
+                            <div>${note.text}</div>
+                            <small>${note.date}</small>
+                        </div>
+                        <button class="delete-note" data-note-id="${note.id}">Delete</button>
+                    `;
+                    container.appendChild(noteItem);
+                });
+                
+                // Add event listeners to delete buttons
+                container.querySelectorAll('.delete-note').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const noteId = parseInt(this.dataset.noteId);
+                        deleteNoteFromTeam(teamNumber, noteId);
+                        renderTeamNotes(teamNumber, containerId);
+                        if (selectedTeamForNotes === teamNumber) {
+                            renderTeamNotes(teamNumber, 'team-notes-list');
+                        }
+                    });
+                });
+            }
+
+            // Delete note from team
+            function deleteNoteFromTeam(teamNumber, noteId) {
+                const notes = JSON.parse(localStorage.getItem('notes') || '{}');
+                
+                if (notes[teamNumber]) {
+                    notes[teamNumber] = notes[teamNumber].filter(note => note.id !== noteId);
+                    localStorage.setItem('notes', JSON.stringify(notes));
+                }
+            }
+
+            // Team card click event
+            teamCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    const teamNumber = this.dataset.teamNumber;
+                    if (teamNumber) {
+                        selectedTeamForNotes = teamNumber;
+                        notesContainer.style.display = 'block';
+                        document.getElementById('notes-team-number').textContent = teamNumber;
+                        renderTeamNotes(teamNumber, 'team-notes-list');
+                    }
+                });
+            });
+
+            // Add note from main page
+            addNoteButton.addEventListener('click', function() {
+                const noteText = newNoteInput.value.trim();
+                
+                if (selectedTeamForNotes && noteText) {
+                    addNoteToTeam(selectedTeamForNotes, noteText);
+                    renderTeamNotes(selectedTeamForNotes, 'team-notes-list');
+                    newNoteInput.value = '';
+                }
+            });
+
+            // Alliance page
+            function initializeAlliancePage() {
+                const teams = JSON.parse(localStorage.getItem('teams') || '[]');
+                const pickLists = JSON.parse(localStorage.getItem('pickLists') || '{ "teamsAbove": [], "firstPick": [], "secondPick": [] }');
+                
+                // Clear existing content
+                document.getElementById('available-teams-container').innerHTML = '';
+                document.getElementById('teams-above-list').innerHTML = '';
+                document.getElementById('first-pick-list').innerHTML = '';
+                document.getElementById('second-pick-list').innerHTML = '';
+                
+                // Create team boxes for available teams
+                teams.forEach(team => {
+                    if (!isTeamInPickLists(team.number, pickLists)) {
+                        createTeamBox(team, document.getElementById('available-teams-container'));
+                    }
+                });
+                
+                // Create team boxes for pick lists
+                pickLists.teamsAbove.forEach(teamNumber => {
+                    const team = teams.find(t => t.number === teamNumber);
+                    if (team) {
+                        createTeamBox(team, document.getElementById('teams-above-list'));
+                    }
+                });
+                
+                pickLists.firstPick.forEach(teamNumber => {
+                    const team = teams.find(t => t.number === teamNumber);
+                    if (team) {
+                        createTeamBox(team, document.getElementById('first-pick-list'));
+                    }
+                });
+                
+                pickLists.secondPick.forEach(teamNumber => {
+                    const team = teams.find(t => t.number === teamNumber);
+                    if (team) {
+                        createTeamBox(team, document.getElementById('second-pick-list'));
+                    }
+                });
+            }
+
+            function isTeamInPickLists(teamNumber, pickLists) {
+                return pickLists.teamsAbove.includes(teamNumber) || 
+                       pickLists.firstPick.includes(teamNumber) || 
+                       pickLists.secondPick.includes(teamNumber);
+            }
+
+            function createTeamBox(team, container) {
+                const box = document.createElement('div');
+                box.className = 'team-box';
+                box.dataset.teamNumber = team.number;
+                box.textContent = team.number;
+                
+                const detail = document.createElement('div');
+                detail.className = 'team-detail';
+                detail.textContent = `${team.number} - ${team.name} (${team.location})`;
+                box.appendChild(detail);
+                
+                // Show team details on hover
+                box.addEventListener('mouseover', function() {
+                    detail.style.display = 'block';
+                });
+                
+                box.addEventListener('mouseout', function() {
+                    detail.style.display = 'none';
+                });
+                
+                // Make draggable
+                box.setAttribute('draggable', 'true');
+                box.addEventListener('dragstart', dragStart);
+                
+                container.appendChild(box);
+            }
+
+            // Drag and drop functionality
+            function dragStart(e) {
+                e.dataTransfer.setData('text/plain', e.target.dataset.teamNumber);
+                e.dataTransfer.effectAllowed = 'move';
+            }
+
+            // Apply color to team box
+            redButton.addEventListener('click', function() {
+                activeColor = 'red';
+            });
+
+            blueButton.addEventListener('click', function() {
+                activeColor = 'blue';
+            });
+
+            normalButton.addEventListener('click', function() {
+                activeColor = 'normal';
+            });
+
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('team-box') && activeColor) {
+                    // Remove existing color classes
+                    e.target.classList.remove('red', 'blue');
+                    
+                    // Add new color class if not normal
+                    if (activeColor !== 'normal') {
+                        e.target.classList.add(activeColor);
+                    }
+                }
+            });
+
+            // Make alliance areas droppable
+            const dropAreas = document.querySelectorAll('.drag-area');
+            
+            dropAreas.forEach(area => {
+                area.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                    this.classList.add('dragover');
+                });
+                
+                area.addEventListener('dragleave', function() {
+                    this.classList.remove('dragover');
+                });
+                
+                area.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    this.classList.remove('dragover');
+                    
+                    const teamNumber = e.dataTransfer.getData('text/plain');
+                    const teamBox = document.querySelector(`.team-box[data-team-number="${teamNumber}"]`);
+                    
+                    if (teamBox) {
+                        // Check if the team is already in a pick list
+                        const pickLists = JSON.parse(localStorage.getItem('pickLists') || '{ "teamsAbove": [], "firstPick": [], "secondPick": [] }');
+                        
+                        // Remove from previous lists
+                        pickLists.teamsAbove = pickLists.teamsAbove.filter(num => num !== teamNumber);
+                        pickLists.firstPick = pickLists.firstPick.filter(num => num !== teamNumber);
+                        pickLists.secondPick = pickLists.secondPick.filter(num => num !== teamNumber);
+                        
+                        // Add to new list
+                        if (this.id === 'teams-above-list') {
+                            pickLists.teamsAbove.push(teamNumber);
+                        } else if (this.id === 'first-pick-list') {
+                            pickLists.firstPick.push(teamNumber);
+                        } else if (this.id === 'second-pick-list') {
+                            pickLists.secondPick.push(teamNumber);
+                        }
+                        
+                        localStorage.setItem('pickLists', JSON.stringify(pickLists));
+                        
+                        // Move the team box to the new container
+                        this.appendChild(teamBox);
+                    }
+                });
+            });
+
+            // Remove team from pick list when double-clicking
+            document.addEventListener('dblclick', function(e) {
+                if (e.target.classList.contains('team-box') && 
+                    (e.target.parentElement.id === 'teams-above-list' || 
+                     e.target.parentElement.id === 'first-pick-list' || 
+                     e.target.parentElement.id === 'second-pick-list')) {
+                    
+                    const teamNumber = e.target.dataset.teamNumber;
+                    const pickLists = JSON.parse(localStorage.getItem('pickLists') || '{ "teamsAbove": [], "firstPick": [], "secondPick": [] }');
+                    
+                    // Remove from pick lists
+                    pickLists.teamsAbove = pickLists.teamsAbove.filter(num => num !== teamNumber);
+                    pickLists.firstPick = pickLists.firstPick.filter(num => num !== teamNumber);
+                    pickLists.secondPick = pickLists.secondPick.filter(num => num !== teamNumber);
+                    
+                    localStorage.setItem('pickLists', JSON.stringify(pickLists));
+                    
+                    // Move back to available teams
+                    document.getElementById('available-teams-container').appendChild(e.target);
+                }
+            });
+
+            // Field view
+            function initializeFieldView() {
+                const fieldContainer = document.getElementById('field-container');
+                canvas = document.getElementById('drawing-canvas');
+                ctx = canvas.getContext('2d');
+                
+                // Set canvas size to match the field image
+                canvas.width = fieldImage.width;
+                canvas.height = fieldImage.height;
+                
+                // Initialize drawing
+                canvas.addEventListener('mousedown', startDrawing);
+                canvas.addEventListener('mousemove', draw);
+                canvas.addEventListener('mouseup', stopDrawing);
+                canvas.addEventListener('mouseout', stopDrawing);
+                
+                // Touch events for mobile
+                canvas.addEventListener('touchstart', handleTouchStart);
+                canvas.addEventListener('touchmove', handleTouchMove);
+                canvas.addEventListener('touchend', handleTouchEnd);
+                
+                // Reset the robots container
+                robotsContainer.innerHTML = '';
+                
+                // Create robot elements for the current match
+                const matchNumber = parseInt(matchNumberInput.value) || 1;
+                const matches = JSON.parse(localStorage.getItem('matches') || '[]');
+                
+                if (matches.length > 0) {
+                    const matchIndex = Math.min(Math.max(0, matchNumber - 1), matches.length - 1);
+                    const match = matches[matchIndex];
+                    
+                    if (match) {
+                        // Create red alliance robots
+                        match.red.forEach((teamNumber, index) => {
+                            createRobot(teamNumber, 'red', index);
+                        });
+                        
+                        // Create blue alliance robots
+                        match.blue.forEach((teamNumber, index) => {
+                            createRobot(teamNumber, 'blue', index);
+                        });
+                    }
+                }
+                
+                // Resize the canvas when the window is resized
+                window.addEventListener('resize', function() {
+                    canvas.width = fieldImage.width;
+                    canvas.height = fieldImage.height;
+                    // Redraw the canvas if needed
+                });
+            }
+
+            function createRobot(teamNumber, alliance, index) {
+                const robot = document.createElement('div');
+                robot.className = `robot-on-field robot-${alliance}`;
+                robot.dataset.teamNumber = teamNumber;
+                robot.textContent = teamNumber;
+                
+                // Position the robot on the field
+                const fieldWidth = fieldImage.width;
+                const fieldHeight = fieldImage.height;
+                
+                let posX, posY;
+                
+                if (alliance === 'red') {
+                    posX = fieldWidth * 0.75;
+                    posY = fieldHeight * (0.25 + index * 0.25);
+                } else {
+                    posX = fieldWidth * 0.25;
+                    posY = fieldHeight * (0.25 + index * 0.25);
+                }
+                
+                robot.style.left = `${posX}px`;
+                robot.style.top = `${posY}px`;
+                
+                robotsContainer.appendChild(robot);
+                
+                // Make the robot draggable
+                makeDraggable(robot);
+            }
+
+            function makeDraggable(element) {
+                let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+                
+                element.addEventListener('mousedown', dragMouseDown);
+                element.addEventListener('touchstart', dragTouchStart, { passive: false });
+                
+                function dragMouseDown(e) {
+                    e.preventDefault();
+                    // Get the mouse cursor position at startup
+                    pos3 = e.clientX;
+                    pos4 = e.clientY;
+                    document.addEventListener('mouseup', closeDragElement);
+                    document.addEventListener('mousemove', elementDrag);
+                }
+                
+                function dragTouchStart(e) {
+                    e.preventDefault();
+                    // Get the touch position at startup
+                    pos3 = e.touches[0].clientX;
+                    pos4 = e.touches[0].clientY;
+                    document.addEventListener('touchend', closeDragElement);
+                    document.addEventListener('touchmove', elementTouchDrag, { passive: false });
+                }
+                
+                function elementDrag(e) {
+                    e.preventDefault();
+                    // Calculate the new cursor position
+                    pos1 = pos3 - e.clientX;
+                    pos2 = pos4 - e.clientY;
+                    pos3 = e.clientX;
+                    pos4 = e.clientY;
+                    
+                    // Set the element's new position
+                    updateElementPosition(element, pos1, pos2);
+                }
+                
+                function elementTouchDrag(e) {
+                    e.preventDefault();
+                    // Calculate the new touch position
+                    pos1 = pos3 - e.touches[0].clientX;
+                    pos2 = pos4 - e.touches[0].clientY;
+                    pos3 = e.touches[0].clientX;
+                    pos4 = e.touches[0].clientY;
+                    
+                    // Set the element's new position
+                    updateElementPosition(element, pos1, pos2);
+                }
+                
+                function updateElementPosition(el, pos1, pos2) {
+                    const fieldContainer = document.getElementById('field-container');
+                    const fieldRect = fieldContainer.getBoundingClientRect();
+                    
+                    // Get current position
+                    let top = el.offsetTop - pos2;
+                    let left = el.offsetLeft - pos1;
+                    
+                    // Constrain to field boundaries
+                    top = Math.max(0, Math.min(top, fieldImage.height - el.offsetHeight));
+                    left = Math.max(0, Math.min(left, fieldImage.width - el.offsetWidth));
+                    
+                    // Update position
+                    el.style.top = top + 'px';
+                    el.style.left = left + 'px';
+                }
+                
+                function closeDragElement() {
+                    // Stop moving when mouse button/touch is released
+                    document.removeEventListener('mouseup', closeDragElement);
+                    document.removeEventListener('mousemove', elementDrag);
+                    document.removeEventListener('touchend', closeDragElement);
+                    document.removeEventListener('touchmove', elementTouchDrag);
+                }
+            }
+
+            // Drawing functions
+            drawToggleButton.addEventListener('click', function() {
+                drawMode = !drawMode;
+                this.textContent = drawMode ? 'Stop Drawing' : 'Draw';
+                canvas.style.pointerEvents = drawMode ? 'auto' : 'none';
+            });
+
+            resetDrawingButton.addEventListener('click', function() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            });
+
+            resetRobotsButton.addEventListener('click', function() {
+                initializeFieldView();
+            });
+
+            function startDrawing(e) {
+                if (!drawMode) return;
+                
+                isDrawing = true;
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineWidth = 3;
+                ctx.lineCap = 'round';
+                ctx.strokeStyle = 'red';
+            }
+
+            function draw(e) {
+                if (!isDrawing || !drawMode) return;
+                
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                ctx.lineTo(x, y);
+                ctx.stroke();
+            }
+
+            function stopDrawing() {
+                isDrawing = false;
+            }
+
+            // Touch drawing handlers
+            function handleTouchStart(e) {
+                if (!drawMode) return;
+                
+                const touch = e.touches[0];
+                const rect = canvas.getBoundingClientRect();
+                const x = touch.clientX - rect.left;
+                const y = touch.clientY - rect.top;
+                
+                isDrawing = true;
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineWidth = 3;
+                ctx.lineCap = 'round';
+                ctx.strokeStyle = 'red';
+                
+                e.preventDefault();
+            }
+
+            function handleTouchMove(e) {
+                if (!isDrawing || !drawMode) return;
+                
+                const touch = e.touches[0];
+                const rect = canvas.getBoundingClientRect();
+                const x = touch.clientX - rect.left;
+                const y = touch.clientY - rect.top;
+                
+                ctx.lineTo(x, y);
+                ctx.stroke();
+                
+                e.preventDefault();
+            }
+
+            function handleTouchEnd() {
+                isDrawing = false;
+            }
+
+            // Initialize the first page
+            updateMatchDisplay();
         });
     </script>
 </body>
